@@ -12,25 +12,33 @@ import org.phoenixframework.channels.Channel;
 import org.phoenixframework.channels.Envelope;
 import org.phoenixframework.channels.IErrorCallback;
 import org.phoenixframework.channels.IMessageCallback;
-import org.phoenixframework.channels.Socket;
 
 import java.io.IOException;
 
+import javax.inject.Inject;
+
+import toothpick.Scope;
+import toothpick.Toothpick;
+import toothpick.smoothie.module.SmoothieActivityModule;
+
 public class MainActivity extends AppCompatActivity {
 
-    private String HOST = "localhost:4000";
-
-    private Socket socket;
+    @Inject
+    WebSocketClient socketClient;
 
     private Channel channel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Scope scope = Toothpick.openScopes(getApplication(), WebSocketClient.class, this);
+        scope.installModules(new SmoothieActivityModule(this));
         super.onCreate(savedInstanceState);
+        Toothpick.inject(this, scope);
+
         setContentView(R.layout.activity_main);
 
         try {
-            channel = setUpSocket("my_room:lobby");
+            channel = socketClient.openChannel("my_room:lobby");
 
             channel.join()
                     .receive("ignore", new IMessageCallback() {
@@ -91,11 +99,5 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-    }
-
-    private Channel setUpSocket(String room) throws IOException {
-        socket = new Socket("ws://" + HOST + "/socket/websocket");
-        socket.connect();
-        return socket.chan(room, null);
     }
 }
