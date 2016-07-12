@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button button = (Button) findViewById(R.id.send_message_button);
         assert button != null;
-        button.setOnClickListener(sendMessageToPhoenix());
+        button.setOnClickListener(sendMessageToPhoenixOnClickListener());
 
         Button clearButton = (Button) findViewById(R.id.clearButton);
         assert clearButton != null;
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private View.OnClickListener sendMessageToPhoenix() {
+    private View.OnClickListener sendMessageToPhoenixOnClickListener() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
