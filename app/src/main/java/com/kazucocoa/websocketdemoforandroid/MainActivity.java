@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -15,7 +16,6 @@ import org.phoenixframework.channels.Envelope;
 import org.phoenixframework.channels.IErrorCallback;
 import org.phoenixframework.channels.IMessageCallback;
 
-import java.io.EOFException;
 import java.io.IOException;
 
 import javax.inject.Inject;
@@ -26,12 +26,18 @@ import toothpick.smoothie.module.SmoothieActivityModule;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String room = "my_room:lobby";
+
+    private String name = "android";
+
     @Inject
     WebSocketClient socketClient;
 
     private Channel channel;
 
     private TextView textView;
+
+    private EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +49,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.activity_main_text);
+        editText = (EditText) findViewById(R.id.editText);
 
         try {
-            channel = socketClient.openChannel("my_room:lobby");
+            channel = socketClient.openChannel(room);
             joinRoom(channel);
         } catch (IOException e) {
             e.printStackTrace();
@@ -61,8 +68,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ObjectNode node = new ObjectNode(JsonNodeFactory.instance)
-                        .put("name", "kazu android")
-                        .put("message", "hello");
+                        .put("name", name)
+                        .put("message", String.valueOf(editText.getText()));
                 try {
                     channel.push("new_message", node);
 
@@ -117,5 +124,5 @@ public class MainActivity extends AppCompatActivity {
                 textView.setText(data);
             }
         });
-        }
+    }
 }
