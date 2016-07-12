@@ -8,39 +8,66 @@
     tools:context="com.kazucocoa.websocketdemoforandroid.MainActivity">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="352dp"
+        android:layout_height="43dp"
         android:text="Hello World!"
         android:id="@+id/activity_main_text"
         app:layout_constraintLeft_toLeftOf="@+id/activity_main"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
         app:layout_constraintTop_toTopOf="@+id/activity_main"
+        android:layout_marginTop="16dp"
         app:layout_constraintRight_toRightOf="@+id/activity_main"
-        app:layout_constraintBottom_toBottomOf="@+id/activity_main"
-        app:layout_constraintVertical_bias="0.18" />
+        android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp" />
 
     <Button
-        android:text="Button"
-        android:layout_width="89dp"
-        android:layout_height="48dp"
+        android:text="send message"
+        android:layout_width="151dp"
+        android:layout_height="wrap_content"
         android:id="@+id/send_message_button"
         app:layout_constraintLeft_toLeftOf="@+id/activity_main"
-        app:layout_constraintRight_toRightOf="@+id/activity_main"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintRight_toLeftOf="@+id/clearButton"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/activity_main"
-        android:layout_marginBottom="40dp" />
+        android:layout_marginBottom="32dp" />
 
     <EditText
-        android:layout_width="217dp"
-        android:layout_height="45dp"
+        android:layout_width="300dp"
+        android:layout_height="46dp"
         android:inputType="textPersonName"
         android:text="message"
         android:ems="10"
         android:id="@+id/editText"
         app:layout_constraintLeft_toLeftOf="@+id/activity_main"
+        app:layout_constraintRight_toRightOf="@+id/activity_main"
+        app:layout_constraintBottom_toTopOf="@+id/send_message_button"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:text="clear"
+        android:layout_width="151dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/clearButton"
+        app:layout_constraintRight_toRightOf="@+id/activity_main"
+        android:layout_marginRight="32dp"
+        android:layout_marginEnd="32dp"
+        app:layout_constraintBottom_toBottomOf="@+id/activity_main"
+        android:layout_marginBottom="32dp" />
+
+    <TextView
+        tools:text="sample message"
+        android:layout_width="351dp"
+        android:layout_height="266dp"
+        android:id="@+id/chatText"
+        app:layout_constraintLeft_toLeftOf="@+id/activity_main"
         app:layout_constraintTop_toBottomOf="@+id/activity_main_text"
         android:layout_marginTop="8dp"
         app:layout_constraintRight_toRightOf="@+id/activity_main"
-        app:layout_constraintBottom_toTopOf="@+id/send_message_button"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintVertical_bias="0.25" />
+        app:layout_constraintBottom_toTopOf="@+id/editText"
+        android:layout_marginBottom="8dp" />
 
 </android.support.constraint.ConstraintLayout>

@@ -1,6 +1,5 @@
 package com.kazucocoa.websocketdemoforandroid;
 
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -37,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
 
+    private TextView chatText;
+
     private EditText editText;
 
     @Override
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.activity_main_text);
+        chatText = (TextView) findViewById(R.id.chatText);
         editText = (EditText) findViewById(R.id.editText);
 
         try {
@@ -61,6 +63,20 @@ public class MainActivity extends AppCompatActivity {
         Button button = (Button) findViewById(R.id.send_message_button);
         assert button != null;
         button.setOnClickListener(sendMessageToPhoenix());
+
+        Button clearButton = (Button) findViewById(R.id.clearButton);
+        assert clearButton != null;
+        clearButton.setOnClickListener(clearButtonOnClickListener());
+
+    }
+
+    private View.OnClickListener clearButtonOnClickListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setText(chatText, "");
+            }
+        };
     }
 
     private View.OnClickListener sendMessageToPhoenix() {
@@ -76,21 +92,23 @@ public class MainActivity extends AppCompatActivity {
                     channel.on("new_message", new IMessageCallback() {
                         @Override
                         public void onMessage(Envelope envelope) {
-                            setText("NEW MESSAGE: " + envelope.toString());
+                            addText(chatText, "name: " + envelope.getPayload().findValue("name").toString());
+                            addText(chatText, "message: " + envelope.getPayload().findValue("message").toString());
+                            addText(chatText, "\n");
                         }
                     });
 
                     channel.onClose(new IMessageCallback() {
                         @Override
                         public void onMessage(Envelope envelope) {
-                            setText("CLOSED: " + envelope.toString());
+                            setText(textView, "CLOSED: " + envelope.toString());
                         }
                     });
 
                     channel.onError(new IErrorCallback() {
                         @Override
                         public void onError(String reason) {
-                            setText("ERROR: " + reason);
+                            setText(textView, "ERROR: " + reason);
                         }
                     });
                 } catch (IOException e) {
@@ -105,23 +123,32 @@ public class MainActivity extends AppCompatActivity {
                 .receive("ignore", new IMessageCallback() {
                     @Override
                     public void onMessage(Envelope envelope) {
-                        setText("IGNORE joining the room");
+                        setText(textView, "IGNORE joining the room");
                     }
                 })
                 .receive("ok", new IMessageCallback() {
                     @Override
                     public void onMessage(Envelope envelope) {
-                        setText("JOINED with " + envelope.toString());
+                        setText(textView, "JOINED with " + envelope.toString());
                     }
                 });
 
     }
 
-    private void setText(final String data) {
+    private void setText(final TextView view, final String data) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textView.setText(data);
+                view.setText(data);
+            }
+        });
+    }
+
+    private void addText(final TextView view, final String data) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                view.append(data);
             }
         });
     }
