@@ -1,9 +1,11 @@
 package com.kazucocoa.websocketdemoforandroid;
 
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,6 +15,7 @@ import org.phoenixframework.channels.Envelope;
 import org.phoenixframework.channels.IErrorCallback;
 import org.phoenixframework.channels.IMessageCallback;
 
+import java.io.EOFException;
 import java.io.IOException;
 
 import javax.inject.Inject;
@@ -28,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Channel channel;
 
+    private TextView textView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Scope scope = Toothpick.openScopes(getApplication(), WebSocketClient.class, this);
@@ -37,45 +42,11 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        textView = (TextView) findViewById(R.id.activity_main_text);
+
         try {
             channel = socketClient.openChannel("my_room:lobby");
-
-            channel.join()
-                    .receive("ignore", new IMessageCallback() {
-                        @Override
-                        public void onMessage(Envelope envelope) {
-                            System.out.println("IGNORE");
-                        }
-                    })
-                    .receive("ok", new IMessageCallback() {
-                        @Override
-                        public void onMessage(Envelope envelope) {
-                            System.out.println("JOINED with " + envelope.toString());
-                        }
-                    });
-
-            channel.on("new:msg", new IMessageCallback() {
-                @Override
-                public void onMessage(Envelope envelope) {
-                    System.out.println("NEW MESSAGE: " + envelope.toString());
-                }
-            });
-
-            channel.onClose(new IMessageCallback() {
-                @Override
-                public void onMessage(Envelope envelope) {
-                    System.out.println("CLOSED: " + envelope.toString());
-                }
-            });
-
-            channel.onError(new IErrorCallback() {
-                @Override
-                public void onError(String reason) {
-                    System.out.println("ERROR: " + reason);
-                }
-            });
-
-
+            joinRoom(channel);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,10 +65,57 @@ public class MainActivity extends AppCompatActivity {
                         .put("message", "hello");
                 try {
                     channel.push("new_message", node);
+
+                    channel.on("new_message", new IMessageCallback() {
+                        @Override
+                        public void onMessage(Envelope envelope) {
+                            setText("NEW MESSAGE: " + envelope.toString());
+                        }
+                    });
+
+                    channel.onClose(new IMessageCallback() {
+                        @Override
+                        public void onMessage(Envelope envelope) {
+                            setText("CLOSED: " + envelope.toString());
+                        }
+                    });
+
+                    channel.onError(new IErrorCallback() {
+                        @Override
+                        public void onError(String reason) {
+                            setText("ERROR: " + reason);
+                        }
+                    });
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         };
     }
+
+    private void joinRoom(Channel channel) throws IOException {
+        channel.join()
+                .receive("ignore", new IMessageCallback() {
+                    @Override
+                    public void onMessage(Envelope envelope) {
+                        setText("IGNORE joining the room");
+                    }
+                })
+                .receive("ok", new IMessageCallback() {
+                    @Override
+                    public void onMessage(Envelope envelope) {
+                        setText("JOINED with " + envelope.toString());
+                    }
+                });
+
+    }
+
+    private void setText(final String data) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(data);
+            }
+        });
+        }
 }
