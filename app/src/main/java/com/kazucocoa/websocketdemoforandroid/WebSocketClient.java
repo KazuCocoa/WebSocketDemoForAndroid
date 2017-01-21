@@ -9,14 +9,13 @@ import javax.inject.Singleton;
 
 @Singleton
 public class WebSocketClient {
-    private String HOST = "172.254.99.31:4000";
+    private String HOST = "172.254.99.35:4000";
 
     public Socket socket;
 
     public WebSocketClient() {
         try {
             this.socket = new Socket("ws://" + HOST + "/socket/websocket");
-            this.socket.connect();
         } catch (IOException e) {
             e.printStackTrace();
         }

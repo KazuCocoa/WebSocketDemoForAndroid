@@ -14,6 +14,7 @@ import org.phoenixframework.channels.Channel;
 import org.phoenixframework.channels.Envelope;
 import org.phoenixframework.channels.IErrorCallback;
 import org.phoenixframework.channels.IMessageCallback;
+import org.phoenixframework.channels.ISocketCloseCallback;
 
 import java.io.IOException;
 
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.editText);
 
         try {
+            establishConnection();
             channel = socketClient.openChannel(room);
             joinRoom(channel);
         } catch (IOException e) {
@@ -68,6 +70,21 @@ public class MainActivity extends AppCompatActivity {
         assert clearButton != null;
         clearButton.setOnClickListener(clearButtonOnClickListener());
 
+    }
+
+    private void establishConnection() throws IOException {
+        socketClient.socket
+                .onClose(new ISocketCloseCallback() {
+                    @Override
+                    public void onClose() {
+                        setText(textView, "CLOSED");
+                    }})
+                .onError(new IErrorCallback() {
+                    @Override
+                    public void onError(String reason) {
+                        setText(textView, "ERROR: " + reason);
+                    }})
+                .connect();
     }
 
     private View.OnClickListener clearButtonOnClickListener() {
@@ -95,20 +112,6 @@ public class MainActivity extends AppCompatActivity {
                             addText(chatText, "name: " + envelope.getPayload().findValue("name").toString());
                             addText(chatText, "message: " + envelope.getPayload().findValue("message").toString());
                             addText(chatText, "\n");
-                        }
-                    });
-
-                    channel.onClose(new IMessageCallback() {
-                        @Override
-                        public void onMessage(Envelope envelope) {
-                            setText(textView, "CLOSED: " + envelope.toString());
-                        }
-                    });
-
-                    channel.onError(new IErrorCallback() {
-                        @Override
-                        public void onError(String reason) {
-                            setText(textView, "ERROR: " + reason);
                         }
                     });
                 } catch (IOException e) {
