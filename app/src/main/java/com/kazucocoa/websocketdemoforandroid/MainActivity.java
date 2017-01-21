@@ -55,8 +55,7 @@ public class MainActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.editText);
 
         try {
-            establishConnection();
-            channel = socketClient.openChannel(room);
+            channel = establishConnection(room);
             joinRoom(channel);
         } catch (IOException e) {
             e.printStackTrace();
@@ -72,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void establishConnection() throws IOException {
+    private Channel establishConnection(String room) throws IOException {
         socketClient.socket
                 .onClose(new ISocketCloseCallback() {
                     @Override
@@ -85,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
                         setText(textView, "ERROR: " + reason);
                     }})
                 .connect();
+        return socketClient.openChannel(room);
     }
 
     private View.OnClickListener clearButtonOnClickListener() {
