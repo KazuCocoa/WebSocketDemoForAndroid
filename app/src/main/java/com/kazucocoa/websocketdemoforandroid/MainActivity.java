@@ -24,11 +24,7 @@ import toothpick.Scope;
 import toothpick.Toothpick;
 import toothpick.smoothie.module.SmoothieActivityModule;
 
-public class MainActivity extends AppCompatActivity {
-
-    private String room = "my_room:lobby";
-
-    private String name = "android";
+public class MainActivity extends AppCompatActivity implements MainActivityView {
 
     @Inject
     WebSocketClient socketClient;
@@ -40,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
     private TextView chatText;
 
     private EditText editText;
+
+    MainActivityModel mainActivityModel = new MainActivityModel();
+
+    MainActivityPresenter mainActivityPresenter = new MainActivityPresenter(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.editText);
 
         try {
-            channel = establishConnection(room);
-            joinRoom(channel);
+            channel = mainActivityPresenter.establishConnection(socketClient, mainActivityModel.room, textView);
+            mainActivityPresenter.joinRoom(channel, textView);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -69,22 +69,6 @@ public class MainActivity extends AppCompatActivity {
         assert clearButton != null;
         clearButton.setOnClickListener(clearButtonOnClickListener());
 
-    }
-
-    private Channel establishConnection(String room) throws IOException {
-        socketClient.socket
-                .onClose(new ISocketCloseCallback() {
-                    @Override
-                    public void onClose() {
-                        setText(textView, "CLOSED");
-                    }})
-                .onError(new IErrorCallback() {
-                    @Override
-                    public void onError(String reason) {
-                        setText(textView, "ERROR: " + reason);
-                    }})
-                .connect();
-        return socketClient.openChannel(room);
     }
 
     private View.OnClickListener clearButtonOnClickListener() {
@@ -101,19 +85,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ObjectNode node = new ObjectNode(JsonNodeFactory.instance)
-                        .put("name", name)
+                        .put("name", mainActivityModel.name)
                         .put("message", String.valueOf(editText.getText()));
                 try {
-                    channel.push("new_message", node);
-
-                    channel.on("new_message", new IMessageCallback() {
-                        @Override
-                        public void onMessage(Envelope envelope) {
-                            addText(chatText, "name: " + envelope.getPayload().findValue("name").toString());
-                            addText(chatText, "message: " + envelope.getPayload().findValue("message").toString());
-                            addText(chatText, "\n");
-                        }
-                    });
+                    mainActivityPresenter.push(channel, "new_message", node);
+                    mainActivityPresenter.on(channel, "new_message", chatText);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -121,24 +97,8 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private void joinRoom(Channel channel) throws IOException {
-        channel.join()
-                .receive("ignore", new IMessageCallback() {
-                    @Override
-                    public void onMessage(Envelope envelope) {
-                        setText(textView, "IGNORE joining the room");
-                    }
-                })
-                .receive("ok", new IMessageCallback() {
-                    @Override
-                    public void onMessage(Envelope envelope) {
-                        setText(textView, "JOINED with " + envelope.toString());
-                    }
-                });
-
-    }
-
-    private void setText(final TextView view, final String data) {
+    @Override
+    public void setText(final TextView view, final String data) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -147,7 +107,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void addText(final TextView view, final String data) {
+    @Override
+    public void addText(final TextView view, final String data) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

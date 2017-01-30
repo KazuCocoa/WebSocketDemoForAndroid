@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 
 @Singleton
 public class WebSocketClient {
-    private String HOST = "172.254.99.35:4000";
+    private String HOST = new WebSocketModel().HOST;
 
     public Socket socket;
 
